@@ -156,20 +156,27 @@ bash _obs_setup.sh
 bash _configure.sh
 bash _launch.sh
 
-# 5. Invoke as a reviewer (full workflow) and an outsider (access denied)
-bash _invoke.sh reviewer 'PvReviewer#2026!'
-bash _invoke.sh outsider 'PvOutsider#2026!'
+# 5. Invoke as a reviewer (full workflow) and an outsider (access denied).
+#    Passwords come from env vars (PV_REVIEWER_PW / PV_OUTSIDER_PW) or the placeholder defaults.
+bash _invoke.sh reviewer
+bash _invoke.sh outsider "$PV_OUTSIDER_PW"
 
 # Teardown — zero residual (identity preserved by design)
 bash scripts/destroy_spine.sh
 ```
 
+The runtime helper scripts self-locate (no hardcoded paths), read `spine-state.env` relative to the
+repo, and detect the venv layout per OS, so they run from a fresh clone on Windows, macOS, or Linux.
+
 Reviewer invoke returns a workflow summary (FAERS lookup, masked narrative, seriousness/clock, INTENT
 audit, `PENDING_APPROVAL`) and `tools_available` that **excludes** `finalize_submission` — Cedar hides
 the forbidden tool. Outsider returns `ACCESS DENIED` with `tools_available: []`.
 
-> The default test-user passwords above are for a **private evaluation account only**. Rotate them (or
-> federate a real IdP) before the environment is shared.
+> **Configuration.** Test-user passwords are env-driven — set `PV_REVIEWER_PW`, `PV_APPROVER_PW`, and
+> `PV_OUTSIDER_PW` (they flow through `deploy_identity.sh`, the tests, and the runtime helpers), or
+> accept the placeholder defaults (`ChangeMe-*1!`). These defaults are for a **private evaluation
+> account only** — rotate them, or federate a real IdP, before the environment is shared. Region and
+> account are resolved dynamically (`AWS_REGION`, `aws sts get-caller-identity`); nothing is hardcoded.
 
 ---
 

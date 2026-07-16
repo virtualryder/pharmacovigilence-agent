@@ -17,7 +17,7 @@ approve(){ # $1 approver -> prints lambda return JSON
   cat /tmp/_appr.json; }
 
 REV="$(aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id "$CLIENT_ID" \
-  --auth-parameters "USERNAME=reviewer,PASSWORD=PvReviewer#2026!" --region "$REGION" \
+  --auth-parameters "USERNAME=reviewer,PASSWORD=${PV_REVIEWER_PW:-ChangeMe-Reviewer1!}" --region "$REGION" \
   --query 'AuthenticationResult.AccessToken' --output text)"
 
 echo "=== human sign-off gate (separation of duties) ==="

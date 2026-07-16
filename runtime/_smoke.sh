@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-cd /c/Users/daryd/Projects-DR/pv-runtime
+# Local smoke test: agent imports resolve + the agentcore CLI is present.
+SELF="$(cd "$(dirname "$0")" && pwd)"; cd "$SELF"; source "$SELF/_env.sh"
 echo "=== import smoke test ==="
-./.venv/Scripts/python.exe -c "
+"$PY" -c "
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
 from strands import Agent
 from strands.models import BedrockModel
@@ -10,4 +11,4 @@ from mcp.client.streamable_http import streamablehttp_client
 print('IMPORTS_OK')
 " 2>&1 | tail -15
 echo "=== agentcore configure --help ==="
-./.venv/Scripts/agentcore.exe configure --help 2>&1 | sed -n '1,60p'
+"$AC" configure --help 2>&1 | sed -n '1,40p'

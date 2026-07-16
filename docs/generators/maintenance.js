@@ -53,7 +53,7 @@ const body = [
   bullet([bold("After an agent code change: "), "from ", code("pv-runtime/"), " run ", code("bash _launch.sh"), " (uses ", code("--auto-update-on-conflict"), ") — the container rebuilds in CodeBuild and the same Runtime ARN is updated."]),
   bullet([bold("After a spine redeploy: "), "do nothing. The gateway URL rotates, but the agent reads it from SSM ", code("/pv-icsr/gateway-url"), " at invoke time, and identity is stable — the Runtime keeps working."]),
   bullet([bold("Only if identity changes "), "(you rebuild the Cognito pool) re-point the Runtime: ", code("bash _repoint.sh"), " then ", code("bash _verify_rt.sh"), "."]),
-  bullet([bold("Verify anytime: "), code("bash _invoke.sh reviewer 'PvReviewer#2026!'"), " and ", code("bash _invoke.sh outsider 'PvOutsider#2026!'"), "."]),
+  bullet([bold("Verify anytime: "), code("bash _invoke.sh reviewer"), " and ", code("bash _invoke.sh outsider $PV_OUTSIDER_PW"), "."]),
 
   H1("4. Monitoring & observability"),
   P("Observability is enabled on the Runtime (OpenTelemetry) and every governed step is logged with the acting identity."),

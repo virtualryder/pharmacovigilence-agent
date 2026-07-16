@@ -8,8 +8,8 @@ CLIENT="$PROJ/tools/mcp_client.py"
 tok(){ aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id "$CLIENT_ID" \
         --auth-parameters "USERNAME=$1,PASSWORD=$2" --region "$REGION" \
         --query 'AuthenticationResult.AccessToken' --output text; }
-REV="$(tok reviewer 'PvReviewer#2026!')"
-OUT="$(tok outsider 'PvOutsider#2026!')"
+REV="$(tok reviewer "${PV_REVIEWER_PW:-ChangeMe-Reviewer1!}")"
+OUT="$(tok outsider "${PV_OUTSIDER_PW:-ChangeMe-Outsider1!}")"
 # Fully-qualified tool ids (<target>___<tool>) so a denial returns the named-policy message
 # even when the tool is hidden from the caller's tools/list.
 T_OPENFDA="openfda-lookup___openfda_lookup"

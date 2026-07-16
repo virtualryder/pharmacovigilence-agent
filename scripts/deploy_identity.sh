@@ -20,7 +20,9 @@ if [ "$CLIENT_ID" = "None" ] || [ -z "$CLIENT_ID" ]; then
   CLIENT_ID="$(aws cognito-idp create-user-pool-client --user-pool-id "$POOL_ID" --client-name pv-gw --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH --region "$REGION" --query UserPoolClient.ClientId --output text)"; log "created app client"
 fi
 aws cognito-idp create-group --user-pool-id "$POOL_ID" --group-name pv_reviewer --region "$REGION" >/dev/null 2>&1 || true
-for u in "reviewer:PvReviewer#2026!:yes" "approver:PvApprover#2026!:yes" "outsider:PvOutsider#2026!:no"; do
+: "${PV_REVIEWER_PW:=ChangeMe-Reviewer1!}"; : "${PV_APPROVER_PW:=ChangeMe-Approver1!}"; : "${PV_OUTSIDER_PW:=ChangeMe-Outsider1!}"
+# Test-user passwords are env-driven; the placeholder defaults MUST be rotated before shared use. (No colons in passwords.)
+for u in "reviewer:$PV_REVIEWER_PW:yes" "approver:$PV_APPROVER_PW:yes" "outsider:$PV_OUTSIDER_PW:no"; do
   un="${u%%:*}"; rest="${u#*:}"; pw="${rest%%:*}"; grp="${rest##*:}"
   aws cognito-idp admin-create-user --user-pool-id "$POOL_ID" --username "$un" --message-action SUPPRESS --region "$REGION" >/dev/null 2>&1 || true
   aws cognito-idp admin-set-user-password --user-pool-id "$POOL_ID" --username "$un" --password "$pw" --permanent --region "$REGION" >/dev/null 2>&1 || true

@@ -3,8 +3,7 @@ identity-state.env
 spine-state.env
 *-state.env
 
-# --- internal build log (account IDs, working notes) ---
-BUILD-NOTES.md
+# --- build scratch log ---
 _scaffold.log
 *.log
 

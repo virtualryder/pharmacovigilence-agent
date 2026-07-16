@@ -7,7 +7,7 @@
 forbid(
   principal,
   action == AgentCore::Action::"pv-core___draft_narrative",
-  resource == AgentCore::Gateway::"arn:aws:bedrock-agentcore:us-east-1:864217980669:gateway/pv-icsr-gw-fnq8n59ipa"
+  resource == AgentCore::Gateway::"arn:aws:bedrock-agentcore:us-east-1:111122223333:gateway/pv-icsr-gw-fnq8n59ipa"
 ) unless {
   context.input.deidentified == true
 };
