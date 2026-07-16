@@ -1,0 +1,38 @@
+# --- machine/account-specific state (never publish) ---
+identity-state.env
+spine-state.env
+*-state.env
+
+# --- internal build log (account IDs, working notes) ---
+BUILD-NOTES.md
+_scaffold.log
+*.log
+
+# --- reference material from prior work (not part of this agent) ---
+carried-over/
+
+# --- build / deploy scratch ---
+scripts/.work/
+**/.work/
+**/.build/
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# --- AgentCore runtime toolkit artifacts (machine-generated) ---
+runtime/.venv/
+runtime/.bedrock_agentcore/
+runtime/.bedrock_agentcore.yaml
+runtime/ssm-pol.json
+runtime/*.zip
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

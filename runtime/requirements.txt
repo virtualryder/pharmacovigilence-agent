@@ -1,0 +1,4 @@
+bedrock-agentcore
+strands-agents>=1.0.0
+mcp>=1.10.0
+aws-opentelemetry-distro>=0.8.0

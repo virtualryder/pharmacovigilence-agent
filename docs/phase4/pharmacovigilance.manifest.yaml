@@ -1,0 +1,68 @@
+# pharmacovigilance.manifest.yaml
+# The PV hero agent (already built + validated) expressed in the template manifest schema.
+# This is the proof-of-abstraction: everything the deploy engine needs that is SPECIFIC to
+# this agent lives here; everything else is the invariant scaffold the template provides.
+
+agent:
+  slug: pv-icsr
+  title: Pharmacovigilance ICSR Intake
+  industry: HCLS
+  region: us-east-1
+  prefix: pv                      # resource name prefix: pv-* (hyphen) / pv_* (Cedar/engine, no hyphens)
+
+identity:                          # stable, long-lived stack (own lifecycle)
+  pool_name: pv-icsr
+  client_name: pv-gw
+  reviewer_group: pv_reviewer
+  users: [reviewer, approver, outsider]
+
+engine:
+  name: pv_icsr_authz              # must match [A-Za-z][A-Za-z0-9_]*  (no hyphens)
+  description: Deny-by-default Cedar authz for the PV ICSR agent
+
+gateway:
+  name: pv-icsr-gw
+  ssm_discovery_param: /pv-icsr/gateway-url    # Runtime reads this; survives spine cycles
+
+guardrail:                         # fail-closed OUTPUT control on drafting
+  name: pv-icsr-guardrail
+  pii_anonymize: [NAME, AGE, EMAIL, PHONE, SSN, ADDRESS]
+  prompt_attack: HIGH
+
+controls:                          # the reusable "built-alongside" last mile (library-provided)
+  fail_closed_masking: true        # mask_phi runs before the model AND before the audit
+  worm_audit: true                 # append-only DynamoDB + S3 Object Lock
+  human_signoff_gate: true         # Step Functions waitForTaskToken, separation of duties
+
+audit:
+  table: pv-audit
+  bucket: pv-audit-worm            # -<acct>-<region> appended by the engine
+  object_lock: GOVERNANCE
+  retention_days: 1
+
+tools:                             # gateway targets. kind=control -> from the shared library; kind=domain -> per-agent
+  - { name: openfda-lookup,     handler: openfda_lookup.py,     kind: domain,  note: "live FAERS aggregate, no PHI" }
+  - { name: mask-phi,           handler: mask_phi.py,           kind: control }
+  - { name: assess-seriousness, handler: assess_seriousness.py, kind: domain,  note: "ICH E2B(R3) seriousness + reporting clock; rules-based, no licensed data" }
+  - { name: pv-core,            handler: core_tools.py,         kind: domain,  guardrailed: true, note: "draft_narrative + finalize_submission(deny-only)" }
+  - { name: write-audit,        handler: write_audit.py,        kind: control }
+  - { name: request-signoff,    handler: request_signoff.py,    kind: control }
+
+policies:                          # Cedar. default-deny + forbid-wins are automatic.
+  - { name: pv_reviewer_permit, kind: permit, role: pv_reviewer,
+      actions: [openfda_lookup, mask_phi, draft_narrative, write_audit, request_signoff] }
+  - { name: mask_before_draft,  kind: forbid, action: draft_narrative,
+      unless: "context.input.deidentified == true" }
+  - { name: mask_before_assess, kind: forbid, action: assess_seriousness,
+      unless: "context.input.deidentified == true" }
+  - { name: no_self_submit,     kind: forbid, action: finalize_submission }   # only the gate finalizes
+
+workflow:                          # Runtime agent behavior
+  entrypoint: agent.py
+  consequential_action: finalize_submission     # never inline; routed through the human gate
+  demo_expected_tools: [mask_phi, openfda_lookup, assess_seriousness, draft_narrative, request_signoff, write_audit]  # finalize hidden by Cedar
+
+honesty_boundary:
+  stubbed: [assemble_case, code_meddra_whodrug] # licensed MedDRA/WHODrug = engagement work
+  connectors: "openFDA live; Argus/Veeva under a customer BAA"
+  not_certified: true
